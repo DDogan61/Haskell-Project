@@ -17,14 +17,72 @@ main = do
     gameLoop totalMoves firstMove board
 
 gameLoop :: Int -> String -> String -> IO ()
-gameLoop 0 _ board = do
-    putStrLn "Game Over! No moves left."
-    printBoard board
+gameLoop 0 currentTurn board = do
+    condition <- checkWinningCondition 0 currentTurn board
+    if condition == "firstsWins"
+        then putStrLn "A & B & C Wins!"
+
+    else if condition == "lastWins"
+        then putStrLn "Z Wins!"
+
+    else do
+        putStrLn "Draw! No move left."
+        printBoard board
 gameLoop remainingMoves currentTurn board = do
-    updatedBoard <- instruction currentTurn board
-    printBoard updatedBoard
-    let nextTurn = if currentTurn == "firsts" then "last" else "firsts"
-    gameLoop (remainingMoves - 1) nextTurn updatedBoard
+    condition <- checkWinningCondition remainingMoves currentTurn board
+    if condition == "firstsWins"
+        then putStrLn "A & B & C Wins!"
+
+    else if condition == "lastWins"
+        then putStrLn "Z Wins!"
+
+    else if condition == "noMoveLeft"
+        then putStrLn "Draw! No move left."
+
+    else do
+        updatedBoard <- instruction currentTurn board
+        printBoard updatedBoard
+        let nextTurn = if currentTurn == "firsts" then "last" else "firsts"
+        gameLoop (remainingMoves - 1) nextTurn updatedBoard
+
+checkWinningCondition :: Int -> String -> String -> IO String
+checkWinningCondition remainingMoves currentTurn board = do
+    if currentTurn == "last" 
+        then do
+            let index = elemIndex 'Z' board
+            if index == Just 9 && (board !! 3) /= '_' && (board !! 8) /= '_' && (board !! 13) /= '_'
+                then return "firstsWins"
+                else return "continue"
+    else do
+        let maybeA = elemIndex 'A' board
+        let maybeB = elemIndex 'B' board
+        let maybeC = elemIndex 'C' board
+        let maybeZ = elemIndex 'Z' board
+
+        case (maybeA, maybeB, maybeC, maybeZ) of
+            (Just aIndex, Just bIndex, Just cIndex, Just zIndex) -> do
+                -- Use do notation to extract row values from IO
+                aRow <- findRow aIndex
+                bRow <- findRow bIndex
+                cRow <- findRow cIndex
+                zRow <- findRow zIndex
+
+                -- Check if zRow is less than aRow, bRow, and cRow (meaning Z is ahead of the others)
+                if zRow < aRow && zRow < bRow && zRow < cRow 
+                    then return "lastWins"
+                    else if remainingMoves == 0
+                        then return "noMoveLeft"
+                        else return "continue"
+            _ -> return "continue"  -- If any of the letters are not found, continue
+
+
+findRow :: Int -> IO Int
+findRow index = do
+    if index == 5 then return 1
+    else if index `elem` [1, 6, 11] then return 2
+    else if index `elem` [2, 7, 12] then return 3
+    else if index `elem` [3, 8, 13] then return 4
+    else return 5
 
 -- Instruction logic
 instruction :: String -> [Char] -> IO String
@@ -92,7 +150,7 @@ isValidMove turn currentIndex index =
 
 -- Replace an element in a list at a given index
 replaceAt :: Int -> a -> [a] -> [a]
-replaceAt i newVal xs = take i xs ++ [newVal] ++ drop (i + 1) xs
+replaceAt index newValue list = take index list ++ [newValue] ++ drop (index + 1) list
 
 -- Print the board (you might want to adjust this for your game grid)
 printBoard :: [Char] -> IO ()
