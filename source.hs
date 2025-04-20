@@ -22,7 +22,7 @@ main = do
 gameLoop :: Int -> String -> String -> IO ()
 gameLoop 0 currentTurn board = do --If no move left, condition checked whether ABC or Z wins. Otherwise its draw
     condition <- checkWinningCondition 0 currentTurn board
-    if condition == "firstsWins"
+    if condition == "firstsWin"
         then putStrLn "A & B & C Wins!"
     else if condition == "lastWins"
         then putStrLn "Z Wins!"
@@ -30,7 +30,7 @@ gameLoop 0 currentTurn board = do --If no move left, condition checked whether A
     printBoard board --Board printed after the result
 gameLoop remainingMoves currentTurn board = do
     condition <- checkWinningCondition remainingMoves currentTurn board --First we check the winning condition
-    if condition == "firstsWins"
+    if condition == "firstsWin"
         then do putStrLn "A & B & C Wins!"
                 printBoard board
     else if condition == "lastWins"
@@ -48,7 +48,7 @@ checkWinningCondition remainingMoves currentTurn board = do
         then do
             let index = elemIndex 'Z' board
             if index == Just 9 && (board !! 3) /= '_' && (board !! 8) /= '_' && (board !! 13) /= '_'
-                then return "firstsWins"
+                then return "firstsWin"
                 else return "continue"
     else do
         let maybeA = elemIndex 'A' board
@@ -149,7 +149,7 @@ isValidMove turn currentIndex index = --Checks whether the index is around curre
 replaceAt :: Int -> a -> [a] -> [a]
 replaceAt index newValue list = take index list ++ [newValue] ++ drop (index + 1) list
 
--- Print the board (you might want to adjust this for your game grid)
+-- Print the board
 printBoard :: [Char] -> IO ()
 printBoard [] = return ()
 printBoard board = do
