@@ -1,6 +1,8 @@
 import Data.List (elemIndex)
 import Data.Maybe (fromMaybe)
-
+--Doğan Doğan 150123053
+--Yusuf Kurt 150123078
+--Beyza Parmak 150122007
 -- Main program
 main :: IO ()
 main = do
@@ -16,33 +18,28 @@ main = do
     -- Start the game
     gameLoop totalMoves firstMove board
 
+-- Function loop that runs the game
 gameLoop :: Int -> String -> String -> IO ()
-gameLoop 0 currentTurn board = do
+gameLoop 0 currentTurn board = do --If no move left, condition checked whether ABC or Z wins. Otherwise its draw
     condition <- checkWinningCondition 0 currentTurn board
     if condition == "firstsWins"
         then putStrLn "A & B & C Wins!"
-
     else if condition == "lastWins"
         then putStrLn "Z Wins!"
-
-    else do
-        putStrLn "Draw! No move left."
-        printBoard board
+    else putStrLn "Draw! No move left."
+    printBoard board --Board printed after the result
 gameLoop remainingMoves currentTurn board = do
-    condition <- checkWinningCondition remainingMoves currentTurn board
+    condition <- checkWinningCondition remainingMoves currentTurn board --First we check the winning condition
     if condition == "firstsWins"
-        then putStrLn "A & B & C Wins!"
-
+        then do putStrLn "A & B & C Wins!"
+                printBoard board
     else if condition == "lastWins"
-        then putStrLn "Z Wins!"
-
-    else if condition == "noMoveLeft"
-        then putStrLn "Draw! No move left."
-
-    else do
-        updatedBoard <- instruction currentTurn board
+        then do putStrLn "Z Wins!"
+                printBoard board
+    else do --If condition is continue
+        updatedBoard <- instruction currentTurn board --Board sended to instruction function to take input and update the board
         printBoard updatedBoard
-        let nextTurn = if currentTurn == "firsts" then "last" else "firsts"
+        let nextTurn = if currentTurn == "firsts" then "last" else "firsts" --Turn and remainingMoves updated and gameLoop recursively called.
         gameLoop (remainingMoves - 1) nextTurn updatedBoard
 
 checkWinningCondition :: Int -> String -> String -> IO String
@@ -76,7 +73,7 @@ checkWinningCondition remainingMoves currentTurn board = do
             _ -> return "continue"  -- If any of the letters are not found, continue
 
 
-findRow :: Int -> IO Int
+findRow :: Int -> IO Int --This function is for Z's winning condition being behind all of the opposing team
 findRow index = do
     if index == 5 then return 1
     else if index `elem` [1, 6, 11] then return 2
@@ -90,55 +87,55 @@ instruction turn board = do
     if turn == "firsts"
         then do
             putStrLn "Please select one of the first three letters and a cell to move it (e.g., A 6)"
-            input <- getLine
-            let letter = input !! 0
-            let indexStr = drop 2 input
+            input <- getLine --Take input
+            let letter = input !! 0 --Find the character that moves
+            let indexStr = drop 2 input --Find where that character moves
             let index = (read indexStr :: Int) - 1
 
-            if letter `elem` ['A', 'B', 'C']
+            if letter `elem` ['A', 'B', 'C'] --Check if the letter is A or B or C
                 then do
-                    let maybeCurrentIndex = elemIndex letter board
+                    let maybeCurrentIndex = elemIndex letter board --Find the index of the letter
                     case maybeCurrentIndex of
                         Just currentIndex -> 
                             -- Check if the move is valid
                             if (board !! index) == '_' && isValidMove turn currentIndex index
-                                then do
+                                then do --If valid then move that letter to that place
                                     let boardAfterMove = replaceAt index letter (replaceAt currentIndex '_' board)
                                     return boardAfterMove
-                                else do
+                                else do --Else nothing happens, now opponent's turn
                                     putStrLn "Invalid move! Now turn passes to the opposing team."
                                     return board
-                        Nothing -> do
+                        Nothing -> do --If letter not found then nothing happens, now opponent's turn
                             putStrLn "Letter not found!"
                             return board
-                else do
+                else do --If letter not found then nothing happens, now opponent's turn
                     putStrLn "Invalid letter! Now turn passes to the opposing team."
                     return board
     else if turn == "last"
         then do
             putStrLn "Please select a cell for the Z:"
-            input <- getLine
+            input <- getLine --Find where that character moves
             let index = (read input :: Int) - 1
-            let maybeCurrentIndex = elemIndex 'Z' board
+            let maybeCurrentIndex = elemIndex 'Z' board --Find the index of Z
             case maybeCurrentIndex of
                 Just currentIndex ->
                     if (board !! index) == '_' && isValidMove turn currentIndex index
-                        then do
+                        then do --If valid then move that letter to that place
                             let boardAfterMove = replaceAt index 'Z' (replaceAt currentIndex '_' board)
                             return boardAfterMove
-                        else do
+                        else do --Else nothing happens, now opponent's turn
                             putStrLn "Invalid move! Now turn passes to the opposing team."
                             return board
-                Nothing -> do
+                Nothing -> do --If letter not found then nothing happens, now opponent's turn
                     putStrLn "Letter not found!"
                     return board
-    else do
+    else do --If letter not found then nothing happens, now opponent's turn
         putStrLn "Invalid turn!"
         return board
 
 -- Validates if the move is allowed based on the current index and target index
 isValidMove :: String -> Int -> Int -> Bool
-isValidMove turn currentIndex index =
+isValidMove turn currentIndex index = --Checks whether the index is around current index. And checkes whether index is between 1 and 15
     if turn == "firsts"
         then
             index `elem` [currentIndex - 5, currentIndex - 4, currentIndex + 1, currentIndex + 5, currentIndex + 6] &&
