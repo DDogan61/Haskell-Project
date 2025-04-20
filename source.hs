@@ -58,7 +58,6 @@ checkWinningCondition remainingMoves currentTurn board = do
 
         case (maybeA, maybeB, maybeC, maybeZ) of
             (Just aIndex, Just bIndex, Just cIndex, Just zIndex) -> do
-                -- Use do notation to extract row values from IO
                 aRow <- findRow aIndex
                 bRow <- findRow bIndex
                 cRow <- findRow cIndex
