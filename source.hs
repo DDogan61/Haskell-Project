@@ -12,11 +12,18 @@ main = do
     putStrLn "Enter the maximum number of total moves allowed:"
     input <- getLine
     let totalMoves = (read input :: Int) * 2
-    putStrLn "Who starts first? Type 'last' or 'firsts':"
-    firstMove <- getLine
-
-    -- Start the game
-    gameLoop totalMoves firstMove board
+    if totalMoves > 0 
+        then do
+            putStrLn "Who starts first? Type 'last' or 'firsts':"
+            firstMove <- getLine
+            if firstMove `elem` ["firsts", "last"]
+                then do
+                    -- Start the game
+                    gameLoop totalMoves firstMove board
+                else
+                    putStrLn "The input is neither 'last' or 'firsts'. Program terminates!"
+        else
+            putStrLn "The input for maximum number of total moves allowed must be greater than 0. Program terminates!"
 
 -- Function loop that runs the game
 gameLoop :: Int -> String -> String -> IO ()
@@ -89,7 +96,7 @@ instruction turn board = do
             input <- getLine --Take input
             let letter = input !! 0 --Find the character that moves
             let indexStr = drop 2 input --Find where that character moves
-            let index = (read indexStr :: Int) - 1
+            let index = read indexStr :: Int
 
             if letter `elem` ['A', 'B', 'C'] --Check if the letter is A or B or C
                 then do
@@ -114,7 +121,7 @@ instruction turn board = do
         then do
             putStrLn "Please select a cell for the Z:"
             input <- getLine --Find where that character moves
-            let index = (read input :: Int) - 1
+            let index = read input :: Int
             let maybeCurrentIndex = elemIndex 'Z' board --Find the index of Z
             case maybeCurrentIndex of
                 Just currentIndex ->
