@@ -56,7 +56,26 @@ checkWinningCondition remainingMoves currentTurn board = do
             let index = elemIndex 'Z' board
             if index == Just 9 && (board !! 3) /= '_' && (board !! 8) /= '_' && (board !! 13) /= '_'
                 then return "firstsWin"
-                else return "continue"
+                else do
+                    let maybeA = elemIndex 'A' board
+                    let maybeB = elemIndex 'B' board
+                    let maybeC = elemIndex 'C' board
+                    let maybeZ = elemIndex 'Z' board
+
+                    case (maybeA, maybeB, maybeC, maybeZ) of
+                        (Just aIndex, Just bIndex, Just cIndex, Just zIndex) -> do
+                            aRow <- findRow aIndex
+                            bRow <- findRow bIndex
+                            cRow <- findRow cIndex
+                            zRow <- findRow zIndex
+
+                            -- Check if zRow is less than aRow, bRow, and cRow (meaning Z is ahead of the others)
+                            if zRow < aRow && zRow < bRow && zRow < cRow 
+                                then return "lastWins"
+                                else if remainingMoves == 0
+                                    then return "noMoveLeft"
+                                    else return "continue"
+                        _ -> return "continue"  -- If any of the letters are not found, continue
     else do
         let maybeA = elemIndex 'A' board
         let maybeB = elemIndex 'B' board
